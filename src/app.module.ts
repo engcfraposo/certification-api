@@ -8,18 +8,23 @@ import { UserCertificationModule } from './user-certification/user-certification
 import { User } from './users/entities/user.entity';
 import { Certification } from './certifications/entities/certification.entity';
 import { UserCertification } from './user-certification/entities/user-certification.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mssql',
-      host: 'osertaoseracloud.database.windows.net',
-      port: 1433,
-      username: 'engcfraposo',
-      password: 'Password@001',
-      database: 'certification-api',
-      synchronize: true,
-      entities: [User, Certification, UserCertification],
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mssql',
+        host: configService.get('DATABASE_HOST'),
+        port: +configService.get('DATABASE_PORT'),
+        username: configService.get('DATABASE_USER'),
+        password: configService.get('DATABASE_PASSWORD'),
+        database: configService.get('DATABASE_NAME'),
+        synchronize: true,
+        entities: [User, Certification, UserCertification],
+      }),
+      inject: [ConfigService],
     }),
     UsersModule,
     CertificationsModule,
